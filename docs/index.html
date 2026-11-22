@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="成人创伤性脑损伤 XGBoost Model A 的 SHAP 综合图与三队列特征重要性。">
+  <title>Model A 的 SHAP 解释 | 创伤性脑损伤</title>
+  <link rel="stylesheet" href="./site.css">
+  <script src="./site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到研究结果</a>
+
+  <header class="masthead">
+    <div class="shell masthead-inner">
+      <a class="brand" href="#main">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>TBI 模型解释</span>
+      </a>
+      <nav class="navigation" aria-label="页面导航">
+        <a href="#shap-figure" id="figure-nav" hidden>综合图</a>
+        <a href="#cohort-importance">队列特征重要性</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell" id="main" tabindex="-1">
+    <section class="intro" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">XGBoost <span aria-hidden="true">/</span> Model A</p>
+        <h1 id="page-title">创伤性脑损伤的<br><span>SHAP 模型解释</span></h1>
+        <p class="intro-description">比较 MIMIC-IV 训练集、内部测试集与 eICU 外部验证集的特征贡献。</p>
+      </div>
+      <div class="study-endpoint">
+        <h2>研究终点</h2>
+        <p>ICU 入科满 24 小时之后，本次住院期间死亡。</p>
+      </div>
+    </section>
+
+    <section class="result-section" id="shap-figure" aria-labelledby="figure-title" hidden>
+      <div class="section-header">
+        <div>
+          <h2 id="figure-title">综合 SHAP 图</h2>
+          <p>展示模型对成人创伤性脑损伤患者住院死亡风险的解释。</p>
+        </div>
+        <div class="download-actions" aria-label="图版下载">
+          <a class="button button-primary" id="download-png" download="shap-integrated.png" hidden>下载 PNG</a>
+          <a class="button button-secondary" id="download-pdf" download="shap-integrated.pdf" hidden>下载 PDF</a>
+        </div>
+      </div>
+
+      <div class="figure-layout">
+        <figure class="figure-card">
+          <div class="image-frame">
+            <p class="load-message" id="figure-message" role="status">正在读取发布图版…</p>
+            <a class="image-link" id="figure-link" target="_blank" rel="noopener" aria-label="在新标签页打开原图" hidden>
+              <img id="integrated-image" alt="Model A 的七面板 SHAP 图，包含三队列蜂群图、全局重要性、病例瀑布图及两个外部验证依赖图。" decoding="async">
+            </a>
+          </div>
+          <figcaption>
+            <span>图版以发布者选定的图为准。</span>
+            <a id="open-original" target="_blank" rel="noopener" hidden>打开原图</a>
+          </figcaption>
+        </figure>
+
+        <aside class="guide" aria-labelledby="guide-title">
+          <h3 id="guide-title">读图说明</h3>
+          <dl class="panel-list">
+            <div>
+              <dt><span>a–c</span> 三队列蜂群图</dt>
+              <dd>每个点对应一个患者在该特征上的贡献。蓝绿色到玫红色表示队列内该特征值由低到高。</dd>
+            </div>
+            <div>
+              <dt><span>d</span> 全局特征重要性</dt>
+              <dd>平均绝对 SHAP 值越大，该特征对预测概率的平均贡献幅度越大。</dd>
+            </div>
+            <div>
+              <dt><span>e</span> 个体瀑布图</dt>
+              <dd>依据发布者选定的图，展示各特征如何将一个示例的模型预测从基线推至个体概率。</dd>
+            </div>
+            <div>
+              <dt><span>f–g</span> eICU 依赖图</dt>
+              <dd>展示训练集排名前两位特征在 eICU 中的贡献分布。菱形和竖线表示组内中位数与四分位距。</dd>
+            </div>
+          </dl>
+          <p class="guide-note">SHAP 值以概率百分点表示。正值提高模型预测概率，负值降低模型预测概率。</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="result-section importance-section" id="cohort-importance" aria-labelledby="importance-title">
+      <div class="section-header">
+        <div>
+          <h2 id="importance-title">各队列特征重要性</h2>
+          <p>按队列查看平均绝对 SHAP 值。所有队列的条形使用相同刻度。</p>
+        </div>
+      </div>
+      <div class="table-card">
+        <p class="load-message" id="table-message" role="status">正在读取发布结果…</p>
+        <div class="cohort-tabs" id="cohort-tabs" role="tablist" aria-label="选择队列" hidden></div>
+        <div id="cohort-panels"></div>
+      </div>
+    </section>
+
+    <footer class="scope">
+      <p><strong>研究用途</strong> SHAP 解释模型预测中的特征贡献。页面用于科研展示，不能用于临床决策或作因果推断。</p>
+    </footer>
+  </main>
+</body>
+</html>
