@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>TBI Mortality Risk Calculator</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#prediction-form">Skip to the prediction form</a>
+  <header class="masthead">
+    <div class="shell masthead-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>TBI Mortality Explorer</span>
+      </div>
+      <div class="masthead-meta">
+        <span class="research-label">Research prototype</span>
+        <span class="status" id="service-status" data-state="checking" role="status">Checking model</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell main-content">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow">XGBoost · Model A</p>
+        <h1 id="page-title">In-hospital mortality after<br>traumatic brain injury</h1>
+        <p class="hero-description">Estimate the probability of death during the same hospitalization in adults with TBI, using data available during the first 24 hours in the ICU.</p>
+      </div>
+      <div class="landmark" aria-label="Prediction landmark">
+        <span class="landmark-time">24<span> h</span></span>
+        <span class="landmark-label">Landmark after ICU admission</span>
+      </div>
+    </section>
+
+    <div class="workspace">
+      <form class="form-card" id="prediction-form" autocomplete="off" novalidate>
+        <div class="form-header">
+          <div>
+            <h2>Patient predictors</h2>
+            <p>Enter all eight predictors, then confirm eligibility.</p>
+          </div>
+          <div class="form-tools">
+            <button class="button button-secondary" type="button" id="fill-example">Load example</button>
+            <button class="button button-quiet" type="button" id="clear-inputs">Clear</button>
+          </div>
+        </div>
+
+        <section class="rank-section" aria-labelledby="rank-title">
+          <div class="rank-header">
+            <div>
+              <h3 id="rank-title">Cohort SHAP ranking</h3>
+              <p id="rank-description">Choose a cohort to order inputs by mean absolute SHAP value, in percentage points.</p>
+            </div>
+            <div class="rank-select">
+              <label for="ranking-cohort">Ranking cohort</label>
+              <div class="select-control">
+                <select id="ranking-cohort" disabled aria-describedby="rank-description">
+                  <option value="">Loading cohorts</option>
+                </select>
+                <span class="select-text" aria-hidden="true">Loading cohorts</span>
+              </div>
+            </div>
+          </div>
+          <p class="visually-hidden" id="rank-status" role="status">Loading cohort rankings…</p>
+          <details class="measurement-guide">
+            <summary>First-24-hour measurement definitions</summary>
+            <p id="vitals-help"><strong>Vital signs</strong> Average the available hourly medians. When invasive and non-invasive systolic blood pressure were recorded at the same time, use the invasive measurement.</p>
+            <p id="labs-help"><strong>Laboratory tests</strong> Use the first valid value from the first 24 hours that was available by the 24-hour landmark.</p>
+          </details>
+          <div class="field-grid" id="ranked-fields">
+            <div class="field rank-field" data-feature="age">
+              <div class="rank-field-heading">
+                <span class="rank-position" aria-hidden="true" hidden></span>
+                <label for="age">Age</label>
+                <span class="rank-importance" hidden></span>
+              </div>
+              <meter class="rank-meter" min="0" max="1" value="0" aria-hidden="true" hidden></meter>
+              <div class="unit-control">
+                <input id="age" name="age" type="number" min="18" step="1" inputmode="numeric" aria-describedby="age-help" required>
+                <span aria-hidden="true">years</span>
+              </div>
+              <span class="field-hint" id="age-help">Enter age in whole years. Ages 90 and older are modeled as 90.</span>
+            </div>
+            <div class="field rank-field" data-feature="gender">
+              <div class="rank-field-heading">
+                <span class="rank-position" aria-hidden="true" hidden></span>
+                <label for="gender">Sex</label>
+                <span class="rank-importance" hidden></span>
+              </div>
+              <meter class="rank-meter" min="0" max="1" value="0" aria-hidden="true" hidden></meter>
+              <div class="select-control">
+                <select id="gender" name="gender" required>
+                  <option value="" disabled selected>Select sex</option>
+                  <option value="F">Female</option>
+                  <option value="M">Male</option>
+                </select>
+                <span class="select-text" aria-hidden="true">Select sex</span>
+              </div>
+            </div>
+            <div class="field rank-field" data-feature="gcs_motor_first">
+              <div class="rank-field-heading">
+                <span class="rank-position" aria-hidden="true" hidden></span>
+                <label for="gcs_motor_first">GCS motor score</label>
+                <span class="rank-importance" hidden></span>
+              </div>
+              <meter class="rank-meter" min="0" max="1" value="0" aria-hidden="true" hidden></meter>
+              <div class="unit-control">
+                <input id="gcs_motor_first" name="gcs_motor_first" type="number" min="1" max="6" step="1" inputmode="numeric" aria-describedby="gcs-help" required>
+                <span aria-hidden="true">points</span>
+              </div>
+              <span class="field-hint" id="gcs-help">First eligible score (1–6).</span>
+            </div>
+            <div class="field rank-field" data-feature="sbp_mean">
+              <div class="rank-field-heading">
+                <span class="rank-position" aria-hidden="true" hidden></span>
+                <label for="sbp_mean">Mean systolic BP</label>
+                <span class="rank-importance" hidden></span>
+              </div>
+              <meter class="rank-meter" min="0" max="1" value="0" aria-hidden="true" hidden></meter>
+              <div class="unit-control">
+                <input id="sbp_mean" name="sbp_mean" type="number" min="30" max="300" step="any" inputmode="decimal" aria-label="Mean systolic blood pressure in mmHg" aria-describedby="vitals-help" required>
+                <span aria-hidden="true">mmHg</span>
+              </div>
+            </div>
+            <div class="field rank-field" data-feature="spo2_mean">
+              <div class="rank-field-heading">
+                <span class="rank-position" aria-hidden="true" hidden></span>
+                <label for="spo2_mean">Mean SpO₂</label>
+                <span class="rank-importance" hidden></span>
+              </div>
+              <meter class="rank-meter" min="0" max="1" value="0" aria-hidden="true" hidden></meter>
+              <div class="unit-control">
+                <input id="spo2_mean" name="spo2_mean" type="number" min="50" max="100" step="any" inputmode="decimal" aria-label="Mean SpO₂ as a percent" aria-describedby="vitals-help" required>
+                <span aria-hidden="true">%</span>
+              </div>
+            </div>
+            <div class="field rank-field" data-feature="hr_mean">
+              <div class="rank-field-heading">
+                <span class="rank-position" aria-hidden="true" hidden></span>
+                <label for="hr_mean">Mean heart rate</label>
+                <span class="rank-importance" hidden></span>
+              </div>
+              <meter class="rank-meter" min="0" max="1" value="0" aria-hidden="true" hidden></meter>
+              <div class="unit-control">
+                <input id="hr_mean" name="hr_mean" type="number" min="10" max="280" step="any" inputmode="decimal" aria-label="Mean heart rate in beats per minute" aria-describedby="vitals-help" required>
+                <span aria-hidden="true">bpm</span>
+              </div>
+            </div>
+            <div class="field rank-field" data-feature="hemoglobin_g_dl">
+              <div class="rank-field-heading">
+                <span class="rank-position" aria-hidden="true" hidden></span>
+                <label for="hemoglobin_g_dl">Hemoglobin</label>
+                <span class="rank-importance" hidden></span>
+              </div>
+              <meter class="rank-meter" min="0" max="1" value="0" aria-hidden="true" hidden></meter>
+              <div class="unit-control">
+                <input id="hemoglobin_g_dl" name="hemoglobin_g_dl" type="number" min="0.1" max="30" step="any" inputmode="decimal" aria-label="Hemoglobin in g/dL" aria-describedby="labs-help hb-unit-help" required>
+                <span aria-hidden="true">g/dL</span>
+              </div>
+              <span class="field-hint" id="hb-unit-help">Divide g/L by 10 to convert to g/dL.</span>
+            </div>
+            <div class="field rank-field" data-feature="creatinine_mg_dl">
+              <div class="rank-field-heading">
+                <span class="rank-position" aria-hidden="true" hidden></span>
+                <label for="creatinine_mg_dl">Creatinine</label>
+                <span class="rank-importance" hidden></span>
+              </div>
+              <meter class="rank-meter" min="0" max="1" value="0" aria-hidden="true" hidden></meter>
+              <div class="unit-control">
+                <input id="creatinine_mg_dl" name="creatinine_mg_dl" type="number" min="0.01" max="150" step="any" inputmode="decimal" aria-label="Creatinine in mg/dL" aria-describedby="labs-help creat-unit-help" required>
+                <span aria-hidden="true">mg/dL</span>
+              </div>
+              <span class="field-hint" id="creat-unit-help">Divide μmol/L by 88.4 to convert to mg/dL.</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="eligibility">
+          <details>
+            <summary>Study cohort eligibility</summary>
+            <p id="eligibility-population">Adults with acute TBI during their first eligible admission. Their first ICU admission was non-elective and occurred within 24 hours of hospital admission or study-defined first hospital contact. They were alive in the same ICU at hour 24.</p>
+            <p id="eligibility-monitoring">Both systolic blood pressure and SpO₂ had valid records in at least 12 of the first 24 hours, with at least two paired hours in each of the 0 to &lt;6 h and 18 to &lt;24 h windows.</p>
+          </details>
+          <label class="confirmation" for="eligible">
+            <input type="checkbox" name="eligible" id="eligible" required aria-describedby="eligibility-population eligibility-monitoring">
+            <span>I confirm that the study eligibility criteria are met.</span>
+          </label>
+        </div>
+
+        <div class="form-footer">
+          <p class="form-feedback" id="form-error" role="alert" hidden></p>
+          <p class="example-note" id="example-note" role="status" hidden>The current inputs are based on a simulated example.</p>
+          <div class="form-footer-action">
+            <button class="button button-primary" id="run-prediction" type="submit" disabled>Predict mortality risk</button>
+            <span class="form-hint">All eight predictors are required.</span>
+          </div>
+        </div>
+      </form>
+
+      <aside class="result-stack" aria-label="Prediction and explanation">
+        <section class="result-card" id="result-card" aria-labelledby="result-title">
+          <h2 id="result-title" tabindex="-1">Prediction result</h2>
+          <p class="result-endpoint">In-hospital mortality after the 24-hour ICU landmark</p>
+
+          <div class="result-main" aria-live="polite" aria-atomic="true">
+            <span class="result-value" id="result-value">—</span>
+            <p class="result-caption" id="result-caption">Submit the predictors to calculate a probability.</p>
+          </div>
+
+          <dl class="result-details">
+            <div>
+              <dt>Model</dt>
+              <dd id="model-id">XGBoost Model A</dd>
+            </div>
+            <div>
+              <dt>Predictors</dt>
+              <dd id="predictor-count">8</dd>
+            </div>
+            <div>
+              <dt>Ensemble members</dt>
+              <dd id="imputation-count">—</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="explanation-card" aria-labelledby="explanation-title">
+          <div class="explanation-header">
+            <h2 id="explanation-title">Individual SHAP explanation</h2>
+            <p>See how each predictor moves the model from its baseline probability to this prediction.</p>
+          </div>
+          <div class="chart-placeholder" id="explanation-placeholder">
+            <p id="explanation-placeholder-text">Submit an eligible case to see its SHAP waterfall.</p>
+          </div>
+          <figure class="waterfall" id="waterfall" hidden aria-labelledby="explanation-title">
+            <ul class="waterfall-legend" aria-label="Contribution legend">
+              <li><i class="legend-positive" aria-hidden="true"></i> Raises prediction</li>
+              <li><i class="legend-negative" aria-hidden="true"></i> Lowers prediction</li>
+            </ul>
+            <ol class="waterfall-rows" id="waterfall-rows" aria-label="Baseline, contributions and final prediction"></ol>
+            <div class="waterfall-axis" aria-hidden="true">
+              <div class="waterfall-ticks" id="waterfall-ticks"></div>
+            </div>
+            <p class="axis-title">Cumulative model output (%)</p>
+            <figcaption>The baseline is the mean model prediction for the MIMIC-IV training reference cases. Contributions are in percentage points (pp).</figcaption>
+          </figure>
+        </section>
+
+        <div class="comparison" id="comparison" aria-live="polite" hidden>
+          <div class="comparison-heading">
+            <h3>Scenario comparison</h3>
+            <button class="comparison-clear" id="clear-comparison" type="button">Clear comparison</button>
+          </div>
+          <dl>
+            <div><dt id="previous-label">Previous prediction</dt><dd id="previous-value">—</dd></div>
+            <div id="delta-row" hidden><dt>Change from previous</dt><dd id="delta-value">—</dd></div>
+          </dl>
+        </div>
+
+        <section class="info-card" aria-labelledby="research-title">
+          <div class="info-mark" aria-hidden="true"></div>
+          <div>
+            <h2 id="research-title">Research use</h2>
+            <p>For research and model demonstration. Clinical decision-making requires separate evaluation. Scenario comparisons show differences in model predictions.</p>
+          </div>
+        </section>
+
+        <div class="service-notice" id="service-notice" hidden>
+          <p id="service-message"></p>
+          <button class="button button-secondary" id="retry-status" type="button">Retry</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>

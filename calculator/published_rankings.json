@@ -1,0 +1,180 @@
+{
+  "cohorts": [
+    {
+      "id": "training",
+      "label": "MIMIC-IV 训练集",
+      "n": 1543,
+      "n_cohort": 1543,
+      "n_imputations": 20,
+      "importance": [
+        {
+          "feature": "gcs_motor_first",
+          "label": "首次 GCS 运动评分",
+          "rank": 1,
+          "mean_abs_shap_pp": 8.255349300963776
+        },
+        {
+          "feature": "age",
+          "label": "年龄",
+          "rank": 2,
+          "mean_abs_shap_pp": 5.064223348670705
+        },
+        {
+          "feature": "creatinine_mg_dl",
+          "label": "肌酐",
+          "rank": 3,
+          "mean_abs_shap_pp": 3.2842881341078733
+        },
+        {
+          "feature": "spo2_mean",
+          "label": "平均 SpO₂",
+          "rank": 4,
+          "mean_abs_shap_pp": 1.8921847734371116
+        },
+        {
+          "feature": "hr_mean",
+          "label": "平均心率",
+          "rank": 5,
+          "mean_abs_shap_pp": 1.3743562985642606
+        },
+        {
+          "feature": "hemoglobin_g_dl",
+          "label": "血红蛋白",
+          "rank": 6,
+          "mean_abs_shap_pp": 1.155445661118783
+        },
+        {
+          "feature": "sbp_mean",
+          "label": "平均收缩压",
+          "rank": 7,
+          "mean_abs_shap_pp": 0.9562576350991567
+        },
+        {
+          "feature": "gender",
+          "label": "性别",
+          "rank": 8,
+          "mean_abs_shap_pp": 0.2156094275451234
+        }
+      ]
+    },
+    {
+      "id": "internal_test",
+      "label": "MIMIC-IV 内部测试集",
+      "n": 662,
+      "n_cohort": 662,
+      "n_imputations": 20,
+      "importance": [
+        {
+          "feature": "gcs_motor_first",
+          "label": "首次 GCS 运动评分",
+          "rank": 1,
+          "mean_abs_shap_pp": 8.16146585427567
+        },
+        {
+          "feature": "age",
+          "label": "年龄",
+          "rank": 2,
+          "mean_abs_shap_pp": 5.187676520561508
+        },
+        {
+          "feature": "creatinine_mg_dl",
+          "label": "肌酐",
+          "rank": 3,
+          "mean_abs_shap_pp": 3.3891823496232725
+        },
+        {
+          "feature": "spo2_mean",
+          "label": "平均 SpO₂",
+          "rank": 4,
+          "mean_abs_shap_pp": 2.006384743549608
+        },
+        {
+          "feature": "hr_mean",
+          "label": "平均心率",
+          "rank": 5,
+          "mean_abs_shap_pp": 1.437787091351818
+        },
+        {
+          "feature": "hemoglobin_g_dl",
+          "label": "血红蛋白",
+          "rank": 6,
+          "mean_abs_shap_pp": 1.1760363235879
+        },
+        {
+          "feature": "sbp_mean",
+          "label": "平均收缩压",
+          "rank": 7,
+          "mean_abs_shap_pp": 0.9752757359409712
+        },
+        {
+          "feature": "gender",
+          "label": "性别",
+          "rank": 8,
+          "mean_abs_shap_pp": 0.2199564438771117
+        }
+      ]
+    },
+    {
+      "id": "external_eicu",
+      "label": "eICU 外部验证集",
+      "n": 2529,
+      "n_cohort": 2529,
+      "n_imputations": 20,
+      "importance": [
+        {
+          "feature": "gcs_motor_first",
+          "label": "首次 GCS 运动评分",
+          "rank": 1,
+          "mean_abs_shap_pp": 7.072736829799492
+        },
+        {
+          "feature": "age",
+          "label": "年龄",
+          "rank": 2,
+          "mean_abs_shap_pp": 4.783431964385494
+        },
+        {
+          "feature": "creatinine_mg_dl",
+          "label": "肌酐",
+          "rank": 3,
+          "mean_abs_shap_pp": 2.8897236223605924
+        },
+        {
+          "feature": "spo2_mean",
+          "label": "平均 SpO₂",
+          "rank": 4,
+          "mean_abs_shap_pp": 1.7799205956760595
+        },
+        {
+          "feature": "hr_mean",
+          "label": "平均心率",
+          "rank": 5,
+          "mean_abs_shap_pp": 1.3294986816642609
+        },
+        {
+          "feature": "hemoglobin_g_dl",
+          "label": "血红蛋白",
+          "rank": 6,
+          "mean_abs_shap_pp": 0.9291778100186857
+        },
+        {
+          "feature": "sbp_mean",
+          "label": "平均收缩压",
+          "rank": 7,
+          "mean_abs_shap_pp": 0.8972180118550169
+        },
+        {
+          "feature": "gender",
+          "label": "性别",
+          "rank": 8,
+          "mean_abs_shap_pp": 0.1866092426369002
+        }
+      ]
+    }
+  ],
+  "assets": {
+    "png": null,
+    "pdf": null
+  },
+  "published_from": "model_a_shap_integrated"
+}
