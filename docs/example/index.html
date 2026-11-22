@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An illustrative XGBoost Model A prediction and its eight SHAP contributions for in-hospital mortality after traumatic brain injury.">
+  <title>Illustrative TBI prediction | XGBoost Model A</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #142842;
+      --muted: #435c75;
+      --line: #dce6ef;
+      --page: #f3f6f9;
+      --blue: #164b75;
+      --raise: #a82d4b;
+      --lower: #087477;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--ink); }
+    h1, h2, p, figure, ol, dl, dd { margin: 0; }
+    a { color: var(--blue); text-underline-offset: .2em; }
+    a:focus-visible { outline: 3px solid #397aa6; outline-offset: 4px; }
+    .shell { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
+    .top { background: #fff; border-bottom: 1px solid var(--line); }
+    .top .shell {
+      min-height: 65px; display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: .65rem 1rem; padding-block: .85rem;
+    }
+    .wordmark { font-weight: 760; letter-spacing: -.02em; }
+    .back { font-size: .9rem; font-weight: 660; }
+    main { padding-block: clamp(2rem, 6vw, 4rem) 3rem; }
+    .hero { max-width: 800px; padding-block: 0 clamp(1.6rem, 4vw, 2.65rem); }
+    .model { color: var(--blue); font-size: .87rem; font-weight: 730; }
+    h1 { margin-block: .5rem .85rem; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.05; letter-spacing: -.05em; }
+    .hero p:last-child { max-width: 67ch; color: var(--muted); line-height: 1.6; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr); gap: 1.15rem; align-items: start; }
+    .card { min-width: 0; background: #fff; border: 1px solid var(--line); border-radius: 15px; padding: clamp(1rem, 2.6vw, 1.7rem); }
+    .result { border-top: 4px solid var(--blue); }
+    .result h2, .explanation h2 { font-size: clamp(1.1rem, 2.4vw, 1.4rem); letter-spacing: -.025em; }
+    .score { display: block; margin-block: .6rem .1rem; color: var(--blue); font-weight: 780; font-size: clamp(3rem, 7vw, 4.7rem); line-height: 1; letter-spacing: -.06em; }
+    .score-label { color: var(--muted); font-size: .95rem; line-height: 1.5; }
+    .summary { margin-top: 1.2rem; padding-top: .7rem; border-top: 1px solid var(--line); }
+    .summary div { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding-block: .35rem; }
+    .summary dt { color: var(--muted); font-size: .88rem; }
+    .summary dd { font-weight: 710; }
+    .subtext { margin-top: .35rem; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+    .legend { display: flex; flex-wrap: wrap; gap: .65rem 1.15rem; margin-block: 1rem .4rem; font-size: .83rem; }
+    .key { display: inline-block; width: .65rem; height: .65rem; border-radius: 2px; margin-right: .25rem; }
+    .key.raise { background: var(--raise); }
+    .key.lower { background: var(--lower); }
+    .chart { font-variant-numeric: tabular-nums; }
+    .rows { list-style: none; padding: 0; }
+    .step, .axis { display: grid; grid-template-columns: minmax(8rem, 13rem) minmax(0, 1fr) 4.6rem; column-gap: .65rem; }
+    .step { min-height: 2.05rem; align-items: center; }
+    .term { font-size: .9rem; line-height: 1.2; overflow-wrap: anywhere; }
+    .numeric { white-space: nowrap; font-weight: 680; text-align: right; font-size: .83rem; }
+    .step--raise .numeric { color: var(--raise); }
+    .step--lower .numeric { color: var(--lower); }
+    .step--endpoint .term { font-weight: 730; }
+    .track { position: relative; display: block; height: 100%; background-image: repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px calc(100% / 3)); border-right: 1px solid var(--line); }
+    .track::before {
+      content: ""; position: absolute; top: 50%; transform: translateY(-50%);
+      left: calc(var(--from) * 100% / 15); width: calc((var(--to) - var(--from)) * 100% / 15);
+      height: .7rem; background: var(--mark); border-radius: 3px;
+    }
+    .step--raise { --mark: var(--raise); }
+    .step--lower { --mark: var(--lower); }
+    .step--endpoint .track::before {
+      width: .58rem; height: .58rem; border-radius: 1px; background: var(--blue);
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    .axis { margin-block: .1rem .85rem; }
+    .ticks { grid-column: 2; display: flex; justify-content: space-between; border-top: 1px solid #859bb0; padding-top: .25rem; color: var(--muted); font-size: .75rem; }
+    .axis-name { grid-column: 2; text-align: center; padding-top: .25rem; color: var(--muted); font-size: .78rem; }
+    figcaption { border-top: 1px solid var(--line); padding-top: .85rem; color: var(--muted); font-size: .86rem; line-height: 1.55; }
+    .foot { border-top: 1px solid var(--line); margin-top: 1.55rem; padding-top: 1rem; color: var(--muted); display: flex; gap: .7rem 1.1rem; flex-wrap: wrap; justify-content: space-between; font-size: .85rem; }
+    @media (max-width: 770px) {
+      .shell { width: calc(100% - 32px); }
+      .workspace { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 430px) {
+      .step, .axis { grid-template-columns: 6.7rem minmax(0, 1fr) 3.55rem; column-gap: .45rem; }
+      .term, .numeric { font-size: .77rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <div class="shell">
+      <span class="wordmark">TBI Mortality Research</span>
+      <a class="back" href="../">Cohort SHAP results</a>
+    </div>
+  </header>
+  <main class="shell">
+    <header class="hero">
+      <p class="model">XGBoost · Model A</p>
+      <h1>Illustrative TBI mortality prediction</h1>
+      <p>One example of the model’s estimated probability of death during the same hospitalization after the 24-hour ICU landmark.</p>
+    </header>
+    <div class="workspace">
+      <section class="card result" aria-labelledby="result-heading">
+        <h2 id="result-heading">Prediction result</h2>
+        <strong class="score">1.58%</strong>
+        <p class="score-label">Predicted in-hospital mortality</p>
+        <dl class="summary">
+          <div><dt>Model baseline</dt><dd>12.58%</dd></div>
+          <div><dt>Combined SHAP contribution</dt><dd>−11.00 pp</dd></div>
+        </dl>
+      </section>
+      <section class="card explanation" aria-labelledby="shap-heading">
+        <h2 id="shap-heading">Individual SHAP contributions</h2>
+        <p class="subtext">Each bar shows how a predictor shifts this output from the model baseline.</p>
+        <p class="legend">
+          <span><span class="key raise" aria-hidden="true"></span> Raises prediction</span>
+          <span><span class="key lower" aria-hidden="true"></span> Lowers prediction</span>
+        </p>
+        <figure class="chart" aria-label="SHAP waterfall">
+          <ol class="rows">
+            <li class="step step--endpoint" style="--from: 12.58; --to: 12.58">
+              <span class="term">Model baseline</span><span class="track" aria-hidden="true"></span><span class="numeric">12.58%</span>
+            </li>
+            <li class="step step--lower" style="--from: 6.12; --to: 12.58">
+              <span class="term">GCS motor score</span><span class="track" aria-hidden="true"></span><span class="numeric">−6.46 pp</span>
+            </li>
+            <li class="step step--lower" style="--from: 3.80; --to: 6.12">
+              <span class="term">Creatinine</span><span class="track" aria-hidden="true"></span><span class="numeric">−2.32 pp</span>
+            </li>
+            <li class="step step--lower" style="--from: 2.16; --to: 3.80">
+              <span class="term">Hemoglobin</span><span class="track" aria-hidden="true"></span><span class="numeric">−1.64 pp</span>
+            </li>
+            <li class="step step--raise" style="--from: 2.16; --to: 3.49">
+              <span class="term">Mean SpO₂</span><span class="track" aria-hidden="true"></span><span class="numeric">+1.33 pp</span>
+            </li>
+            <li class="step step--lower" style="--from: 2.79; --to: 3.49">
+              <span class="term">Mean heart rate</span><span class="track" aria-hidden="true"></span><span class="numeric">−0.70 pp</span>
+            </li>
+            <li class="step step--lower" style="--from: 2.19; --to: 2.79">
+              <span class="term">Mean systolic BP</span><span class="track" aria-hidden="true"></span><span class="numeric">−0.60 pp</span>
+            </li>
+            <li class="step step--lower" style="--from: 1.68; --to: 2.19">
+              <span class="term">Age</span><span class="track" aria-hidden="true"></span><span class="numeric">−0.51 pp</span>
+            </li>
+            <li class="step step--lower" style="--from: 1.58; --to: 1.68">
+              <span class="term">Sex</span><span class="track" aria-hidden="true"></span><span class="numeric">−0.10 pp</span>
+            </li>
+            <li class="step step--endpoint" style="--from: 1.58; --to: 1.58">
+              <span class="term">Final prediction</span><span class="track" aria-hidden="true"></span><span class="numeric">1.58%</span>
+            </li>
+          </ol>
+          <div class="axis" aria-hidden="true">
+            <div class="ticks"><span>0</span><span>5</span><span>10</span><span>15</span></div>
+            <p class="axis-name">Cumulative model output (%)</p>
+          </div>
+          <figcaption>The baseline is the mean prediction for MIMIC-IV training reference cases. Contributions are reported in percentage points (pp) and describe this model output.</figcaption>
+        </figure>
+      </section>
+    </div>
+    <footer class="foot">
+      <p>Fixed example for research and model demonstration.</p>
+      <a href="https://github.com/ErhaMunai/tbi-shap-results/tree/main/calculator">Calculator source code</a>
+    </footer>
+  </main>
+</body>
+</html>
